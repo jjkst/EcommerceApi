@@ -1,0 +1,7 @@
+CREATE TABLE Appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ServiceType VARCHAR(255) NOT NULL,
+    Notes VARCHAR(500) DEFAULT NULL,
+    StartTime TIMESTAMP,
+    EndTime TIMESTAMP
+);
