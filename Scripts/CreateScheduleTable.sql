@@ -1,0 +1,9 @@
+CREATE TABLE Schedules (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    ContactName VARCHAR(60) NOT NULL,
+    Service VARCHAR(100) NOT NULL,
+    SelectedDate DATE NOT NULL,
+    Timeslots VARCHAR(100) NOT NULL,
+    Note VARCHAR(500) DEFAULT NULL,
+    Uid VARCHAR(100) NOT NULL
+);

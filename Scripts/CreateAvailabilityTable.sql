@@ -1,0 +1,7 @@
+CREATE TABLE Availabilities (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    Timeslots VARCHAR(500) NOT NULL,
+    Description VARCHAR(500) DEFAULT NULL 
+);

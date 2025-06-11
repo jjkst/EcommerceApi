@@ -5,74 +5,12 @@ using EcommerceApi.Models;
 
 namespace EcommerceApi.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UsersController(ApplicationDbContext context, ILogger<UsersController> logger) : ControllerBase
+    public class UsersController : BaseController<User, ApplicationDbContext>
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly ILogger<UsersController> _logger = logger;
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
+            : base(context, logger) { }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            try
-            {
-                var users = await _context.Users.ToListAsync();
-                _logger.LogInformation("Fetched {Count} users from the database.", users.Count);
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while fetching users.");
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<User>> GetUserById(int id)
-        {
-            try
-            {
-                var user = await _context.Users.FindAsync(id);
-
-                if (user == null)
-                {
-                    _logger.LogWarning("User with ID {Id} not found.", id);
-                    return NotFound($"User with ID {id} not found.");
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while fetching the user with ID {Id}.", id);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<User>> CreateUser([FromBody] User user)
-        {
-            try
-            {
-                if (user == null)
-                {
-                    _logger.LogWarning("Received a null user object in the request.");
-                    return BadRequest("User object is null.");
-                }
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Created a new user with ID {Id}.", user.Id);
-                return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while creating a new user.");
-                return StatusCode(500, "Internal server error");
-            }
-        }
+        protected override object GetEntityId(User entity) => entity.Id;
 
         [HttpPut("{id:int}/role")]
         public async Task<IActionResult> UpdateUserRole(int id, [FromBody] string newRole)
@@ -112,32 +50,6 @@ namespace EcommerceApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating the role for user with ID {Id}.", id);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            try
-            {
-                var user = await _context.Users.FindAsync(id);
-
-                if (user == null)
-                {
-                    _logger.LogWarning("User with ID {Id} not found for deletion.", id);
-                    return NotFound($"User with ID {id} not found.");
-                }
-
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Deleted user with ID {Id}.", id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while deleting the user with ID {Id}.", id);
                 return StatusCode(500, "Internal server error");
             }
         }
