@@ -27,21 +27,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     ));
 
 var app = builder.Build();
+app.Urls.Add("http://0.0.0.0:5002");
+
+// app.Urls.Add("https://0.0.0.0:5003");
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-// Apply the CORS policy before authorization
+app.UseRouting();
 app.UseCors("AllowAngularApp");
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
