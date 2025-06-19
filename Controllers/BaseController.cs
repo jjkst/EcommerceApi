@@ -9,18 +9,12 @@ namespace EcommerceApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public abstract class BaseController<TEntity, TContext> : ControllerBase
+    public abstract class BaseController<TEntity, TContext>(TContext context, ILogger logger) : ControllerBase
         where TEntity : class
         where TContext : DbContext
     {
-        protected readonly TContext _context;
-        protected readonly ILogger _logger;
-
-        public BaseController(TContext context, ILogger logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+        protected readonly TContext _context = context;
+        protected readonly ILogger _logger = logger;
 
         [HttpGet]
         public virtual async Task<ActionResult<IEnumerable<TEntity>>> GetAll()

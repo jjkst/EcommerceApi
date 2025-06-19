@@ -14,6 +14,10 @@ namespace EcommerceApi.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Service>()
+            .HasIndex(p => p.Title)
+            .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
     }

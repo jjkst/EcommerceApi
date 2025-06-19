@@ -1,13 +1,24 @@
 using EcommerceApi.Models;
 using EcommerceApi.Context;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApi.Controllers
 {
-    public class ServicesController : BaseController<Service, ApplicationDbContext>
+    public class ServicesController(ApplicationDbContext context, ILogger<ServicesController> logger) : BaseController<Service, ApplicationDbContext>(context, logger)
     {
-        public ServicesController(ApplicationDbContext context, ILogger<ServicesController> logger)
-            : base(context, logger) { }
-
         protected override object GetEntityId(Service entity) => entity.Id;
+
+        public override async Task<ActionResult<Service>> Create([FromBody] Service entity)
+        {
+            bool duplicateService = await _context.Services.AnyAsync(
+                ps => ps.Title == entity.Title ||
+                ps.Description == entity.Description);
+            if (duplicateService)
+            {
+                return Conflict(new { message = $"Service with title '{entity.Title}' or description '{entity.Description}' already exists.", code = "DUPLICATE_SERVICE" });
+            }
+            return await base.Create(entity);
+        }
     }
 }
