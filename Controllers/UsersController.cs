@@ -5,11 +5,8 @@ using EcommerceApi.Models;
 
 namespace EcommerceApi.Controllers
 {
-    public class UsersController : BaseController<User, ApplicationDbContext>
+    public class UsersController(ApplicationDbContext context, ILogger<UsersController> logger) : BaseController<User, ApplicationDbContext>(context, logger)
     {
-        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
-            : base(context, logger) { }
-
         protected override object GetEntityId(User entity) => entity.Id;
 
         [HttpPut("{id:int}/role")]

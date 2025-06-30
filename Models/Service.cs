@@ -12,7 +12,7 @@ namespace EcommerceApi.Models
 
         public string Description { get; set; }
 
-        public string ImageLink { get; set; }
+        public string FileName { get; set; }
 
         [Range(0, double.MaxValue)]
         public decimal Price { get; set; }
