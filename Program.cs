@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EcommerceApi.Context;
+using EcommerceApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure EmailSettings from appsettings
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
 
 // Add CORS policy to allow Angular app
 builder.Services.AddCors(options =>

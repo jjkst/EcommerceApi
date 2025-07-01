@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using EcommerceApi.Context;
+using Microsoft.Extensions.Options;
 using EcommerceApi.Models;
 using System.Net.Mail;
 using System.Net;
@@ -8,50 +8,77 @@ namespace EcommerceApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EmailController(ApplicationDbContext context, ILogger<EmailController> emailController) : ControllerBase
+    public class EmailController : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> SendEmail(Contact contact)
-        {
-            var emailSent = await SendEmailNotification(contact);
-            if (!emailSent)
-                return StatusCode(500, "Email notification failed.");
-            return Ok("Email notification sent successfully.");
-        }
+        private readonly EmailSettings _emailSettings;
 
-        private static async Task<bool> SendEmailNotification(Contact contact)
+        public EmailController(IOptions<EmailSettings> emailSettings)
+        {
+            _emailSettings = emailSettings.Value;
+        }
+        
+        [HttpPost("send")]
+        public async Task<IActionResult> SendEmail([FromBody] Contact contact)
         {
             try
             {
-                var smtpClient = new SmtpClient("smtp.gmail.com")
+                var smtpServer = _emailSettings.SmtpServer;
+                var smtpPort = _emailSettings.SmtpPort;
+                var username = _emailSettings.SmtpUsername;
+                var password = _emailSettings.SmtpPassword;
+                var enableSsl = _emailSettings.EnableSsl;
+
+                using (var client = new SmtpClient(smtpServer, smtpPort))
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential("karthi.jayaraman@gmail.com", "potbelly"),
-                    EnableSsl = true,
-                };
+                    client.Credentials = new NetworkCredential(username, password);
+                    client.EnableSsl = enableSsl;
+                    client.Timeout = 10000; // 10 seconds timeout
 
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress("karthi.jayaraman@gmail.com"),
-                    Subject = "Question from Ecommerce Application",
-                    Body = $"A new question has been submitted:\n\n" +
-                           $"Name: {contact.FirstName} {contact.LastName}\n" +
-                           $"Email: {contact.Email}\n" +
-                           $"Phone: {contact.PhoneNumber}\n" +
-                           $"Question: {contact.Questions}",
-                    IsBodyHtml = false,
-                };
+                    var message = new MailMessage
+                    {
+                        From = new MailAddress(username), 
+                        Subject = "Question from Ecommerce Application",
+                        Body = $"A new question has been submitted:<br><br>" +
+                           $"<strong>Name:</strong> {contact.FirstName} {contact.LastName}<br>" +
+                           $"<strong>Email:</strong> {contact.Email}<br>" +
+                           $"<strong>Phone:</strong> {contact.PhoneNumber}<br>" +
+                           $"<strong>Question:</strong> {contact.Questions}",
+                        IsBodyHtml = true
+                    };
+                    message.To.Add("jjkst.dev@gmail.com");
 
-                mailMessage.To.Add("jjkst.dev@gmail.com");
+                    await client.SendMailAsync(message);
+                }
 
-                await Task.Run(() => smtpClient.Send(mailMessage));        
-                return true;
+                return Ok(new { message = "Email sent successfully" });
+            }
+            catch (SmtpException smtpEx)
+            {
+                return BadRequest(new { 
+                    error = $"SMTP Error: {smtpEx.Message}", 
+                    statusCode = smtpEx.StatusCode,
+                    details = "Check your SMTP credentials and settings"
+                });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending email: {ex.Message}");
-                return false;
+                return BadRequest(new { 
+                    error = $"Error sending email: {ex.Message}",
+                    details = ex.StackTrace
+                });
             }
+        }
+    
+        [HttpGet("settings")]
+        public IActionResult GetEmailSettings()
+        {
+            return Ok(new
+            {
+                SmtpServer = _emailSettings.SmtpServer,
+                SmtpPort = _emailSettings.SmtpPort,
+                EnableSsl = _emailSettings.EnableSsl,
+                Username = _emailSettings.SmtpUsername 
+            });
         }
     }
 }
