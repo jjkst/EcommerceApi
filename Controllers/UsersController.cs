@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using EcommerceApi.Context;
 using EcommerceApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApi.Controllers
 {
-    public class UsersController(ApplicationDbContext context, ILogger<UsersController> logger) : BaseController<User, ApplicationDbContext>(context, logger)
+    public class UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
+        : BaseController<User, ApplicationDbContext>(context, logger)
     {
         protected override object GetEntityId(User entity) => entity.Id;
 
@@ -29,24 +30,37 @@ namespace EcommerceApi.Controllers
                 }
 
                 // Validate newRole against the UserRole enum
-                if (!Enum.TryParse(typeof(UserRole), newRole, true, out var roleObj) ||
-                 roleObj is not UserRole validRole)
+                if (
+                    !Enum.TryParse(typeof(UserRole), newRole, true, out var roleObj)
+                    || roleObj is not UserRole validRole
+                )
                 {
-                    _logger.LogWarning("Received a role value '{Role}' that is not valid for user with ID {Id}.", newRole, id);
+                    _logger.LogWarning(
+                        "Received a role value '{Role}' that is not valid for user with ID {Id}.",
+                        newRole,
+                        id
+                    );
                     return BadRequest($"Role value '{newRole}' is not valid.");
                 }
-
 
                 user.Role = validRole;
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Updated role for user with ID {Id} to {Role}.", id, newRole);
+                _logger.LogInformation(
+                    "Updated role for user with ID {Id} to {Role}.",
+                    id,
+                    newRole
+                );
                 return Ok(user);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while updating the role for user with ID {Id}.", id);
+                _logger.LogError(
+                    ex,
+                    "An error occurred while updating the role for user with ID {Id}.",
+                    id
+                );
                 return StatusCode(500, "Internal server error");
             }
         }

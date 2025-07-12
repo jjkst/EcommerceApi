@@ -1,8 +1,8 @@
+using System.Net;
+using System.Net.Mail;
+using EcommerceApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using EcommerceApi.Models;
-using System.Net.Mail;
-using System.Net;
 
 namespace EcommerceApi.Controllers
 {
@@ -16,7 +16,7 @@ namespace EcommerceApi.Controllers
         {
             _emailSettings = emailSettings.Value;
         }
-        
+
         [HttpPost("send")]
         public async Task<IActionResult> SendEmail([FromBody] Contact contact)
         {
@@ -36,14 +36,15 @@ namespace EcommerceApi.Controllers
 
                     var message = new MailMessage
                     {
-                        From = new MailAddress(username), 
+                        From = new MailAddress(username),
                         Subject = "Question from Ecommerce Application",
-                        Body = $"A new question has been submitted:<br><br>" +
-                           $"<strong>Name:</strong> {contact.FirstName} {contact.LastName}<br>" +
-                           $"<strong>Email:</strong> {contact.Email}<br>" +
-                           $"<strong>Phone:</strong> {contact.PhoneNumber}<br>" +
-                           $"<strong>Question:</strong> {contact.Questions}",
-                        IsBodyHtml = true
+                        Body =
+                            $"A new question has been submitted:<br><br>"
+                            + $"<strong>Name:</strong> {contact.FirstName} {contact.LastName}<br>"
+                            + $"<strong>Email:</strong> {contact.Email}<br>"
+                            + $"<strong>Phone:</strong> {contact.PhoneNumber}<br>"
+                            + $"<strong>Question:</strong> {contact.Questions}",
+                        IsBodyHtml = true,
                     };
                     message.To.Add("jjkst.dev@gmail.com");
 
@@ -54,31 +55,35 @@ namespace EcommerceApi.Controllers
             }
             catch (SmtpException smtpEx)
             {
-                return BadRequest(new { 
-                    error = $"SMTP Error: {smtpEx.Message}", 
-                    statusCode = smtpEx.StatusCode,
-                    details = "Check your SMTP credentials and settings"
-                });
+                return BadRequest(
+                    new
+                    {
+                        error = $"SMTP Error: {smtpEx.Message}",
+                        statusCode = smtpEx.StatusCode,
+                        details = "Check your SMTP credentials and settings",
+                    }
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest(new { 
-                    error = $"Error sending email: {ex.Message}",
-                    details = ex.StackTrace
-                });
+                return BadRequest(
+                    new { error = $"Error sending email: {ex.Message}", details = ex.StackTrace }
+                );
             }
         }
-    
+
         [HttpGet("settings")]
         public IActionResult GetEmailSettings()
         {
-            return Ok(new
-            {
-                SmtpServer = _emailSettings.SmtpServer,
-                SmtpPort = _emailSettings.SmtpPort,
-                EnableSsl = _emailSettings.EnableSsl,
-                Username = _emailSettings.SmtpUsername 
-            });
+            return Ok(
+                new
+                {
+                    SmtpServer = _emailSettings.SmtpServer,
+                    SmtpPort = _emailSettings.SmtpPort,
+                    EnableSsl = _emailSettings.EnableSsl,
+                    Username = _emailSettings.SmtpUsername,
+                }
+            );
         }
     }
 }

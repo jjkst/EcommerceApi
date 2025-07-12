@@ -18,6 +18,7 @@ namespace EcommerceApi.Models
         [Required]
         public List<string> Timeslots { get; set; }
 
-        public string Description { get; set; }
+        [Required]
+        public List<string> Services { get; set; }
     }
 }

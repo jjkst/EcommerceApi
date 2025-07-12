@@ -1,15 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace EcommerceApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public abstract class BaseController<TEntity, TContext>(TContext context, ILogger logger) : ControllerBase
+    public abstract class BaseController<TEntity, TContext>(TContext context, ILogger logger)
+        : ControllerBase
         where TEntity : class
         where TContext : DbContext
     {
@@ -22,7 +20,10 @@ namespace EcommerceApi.Controllers
             try
             {
                 var entities = await _context.Set<TEntity>().ToListAsync();
-                _logger.LogInformation("Fetched {Count} entities from the database.", entities.Count);
+                _logger.LogInformation(
+                    "Fetched {Count} entities from the database.",
+                    entities.Count
+                );
                 return Ok(entities);
             }
             catch (Exception ex)
@@ -49,7 +50,11 @@ namespace EcommerceApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching the entity with ID {Id}.", id);
+                _logger.LogError(
+                    ex,
+                    "An error occurred while fetching the entity with ID {Id}.",
+                    id
+                );
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -79,7 +84,10 @@ namespace EcommerceApi.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public virtual async Task<IActionResult> Update(int id, [FromBody] TEntity updatedEntity)
+        public virtual async Task<ActionResult<TEntity>> Update(
+            int id,
+            [FromBody] TEntity updatedEntity
+        )
         {
             try
             {
@@ -99,7 +107,11 @@ namespace EcommerceApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while updating the entity with ID {Id}.", id);
+                _logger.LogError(
+                    ex,
+                    "An error occurred while updating the entity with ID {Id}.",
+                    id
+                );
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -125,7 +137,11 @@ namespace EcommerceApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while deleting the entity with ID {Id}.", id);
+                _logger.LogError(
+                    ex,
+                    "An error occurred while deleting the entity with ID {Id}.",
+                    id
+                );
                 return StatusCode(500, "Internal server error");
             }
         }

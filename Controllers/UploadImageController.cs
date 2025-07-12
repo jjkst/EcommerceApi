@@ -1,15 +1,27 @@
-using Microsoft.AspNetCore.Mvc;
 using EcommerceApi.Context;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EcommerceApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UploadImageController(ApplicationDbContext context, ILogger<UploadImageController> uploadImageController) : ControllerBase
+    public class UploadImageController(
+        ApplicationDbContext context,
+        ILogger<UploadImageController> uploadImageController
+    ) : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+        public class UploadImageRequest
         {
+            public IFormFile File { get; set; } = null!;
+            public string? Folder { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest request)
+        {
+            var file = request.File;
+            var uploadsFolder = request.Folder;
+
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded.");
 
@@ -19,11 +31,7 @@ namespace EcommerceApi.Controllers
             if (!allowedExtensions.Contains(extension))
                 return BadRequest("Unsupported file type.");
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            Directory.CreateDirectory(uploadsFolder); // Ensure folder exists
-
             var filePath = Path.Combine(uploadsFolder, $"{Guid.NewGuid()}_{file.FileName}");
-
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
